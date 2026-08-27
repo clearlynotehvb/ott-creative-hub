@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { CopyField } from "@/components/CopyField";
 import { InventoryPanel } from "@/components/InventoryPanel";
+import { DestinationLink } from "@/components/DestinationLink";
 import { deleteCreative } from "@/app/(app)/creatives/actions";
 import { displayPath, formatBytes } from "@/lib/media";
 import {
@@ -150,6 +151,10 @@ export function CreativeDetail({
             </a>
           )}
         </div>
+
+        {creative.destination_url && (
+          <DestinationLink url={creative.destination_url} />
+        )}
 
         {creative.products && (
           <div className="card p-4">

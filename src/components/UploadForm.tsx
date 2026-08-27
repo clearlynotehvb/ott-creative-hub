@@ -39,6 +39,7 @@ export function UploadForm({
   const supabase = createClient();
 
   const [angle, setAngle] = useState("");
+  const [destination, setDestination] = useState("");
   const [groupId, setGroupId] = useState("");
   const [newGroupName, setNewGroupName] = useState("");
   const [productId, setProductId] = useState("");
@@ -94,6 +95,21 @@ export function UploadForm({
 
     const filled = RATIOS.filter((r) => slots[r]);
 
+    // People paste "shop.com/x" as often as the full URL — accept both.
+    const rawLink = destination.trim();
+    const hasScheme =
+      rawLink.toLowerCase().startsWith("http://") ||
+      rawLink.toLowerCase().startsWith("https://");
+    const link = rawLink ? (hasScheme ? rawLink : "https://" + rawLink) : "";
+
+    if (link) {
+      try {
+        new URL(link);
+      } catch {
+        return setError("That destination link doesn't look like a valid URL.");
+      }
+    }
+
     const firstHeadline = variants[0]?.headline.trim() ?? "";
     if (!firstHeadline) {
       return setError("Add a headline — it's how the creative is identified.");
@@ -135,6 +151,7 @@ export function UploadForm({
         .insert({
           title: firstHeadline,
           angle: angle.trim() || null,
+          destination_url: link || null,
           group_id: resolvedGroupId,
           product_id: productId || null,
           notes: notes.trim() || null,
@@ -281,6 +298,22 @@ export function UploadForm({
               />
             )}
           </div>
+        </div>
+
+        <div>
+          <label className="label" htmlFor="destination">
+            Destination link{" "}
+            <span className="text-faint">— where the ad sends people</span>
+          </label>
+          <input
+            id="destination"
+            type="url"
+            inputMode="url"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+            className="field"
+            placeholder="https://ownthetrend.ca/products/aliza-blue"
+          />
         </div>
 
         <div>

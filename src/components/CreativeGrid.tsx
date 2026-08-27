@@ -89,6 +89,7 @@ export function CreativeGrid({
         c.notes ?? "",
         c.products?.title ?? "",
         c.creative_groups?.name ?? "",
+        c.destination_url ?? "",
         ...(c.creative_copy ?? []).flatMap((cp) => [cp.headline, cp.primary_text]),
       ]
         .join(" ")
@@ -354,11 +355,26 @@ function Card({
           </div>
         )}
 
-        {variantCount > 1 && (
-          <div className="mt-1.5 text-[11px] text-faint">
-            {variantCount} copy variants
-          </div>
-        )}
+        <div className="mt-1.5 flex items-center gap-2 text-[11px] text-faint">
+          {variantCount > 1 && <span>{variantCount} copy variants</span>}
+          {creative.destination_url ? (
+            <span className="ml-auto flex items-center gap-1" title="Destination link set">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden>
+                <path
+                  d="M6.5 9.5a2.5 2.5 0 0 0 3.5 0l2-2a2.5 2.5 0 0 0-3.5-3.5l-.7.7M9.5 6.5a2.5 2.5 0 0 0-3.5 0l-2 2a2.5 2.5 0 0 0 3.5 3.5l.7-.7"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                />
+              </svg>
+              Link
+            </span>
+          ) : (
+            <span className="ml-auto text-warn" title="No destination link yet">
+              No link
+            </span>
+          )}
+        </div>
       </div>
     </Link>
   );

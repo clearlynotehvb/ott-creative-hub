@@ -104,6 +104,7 @@ export type Creative = {
   product_id: string | null;
   group_id: string | null;
   notes: string | null;
+  destination_url: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

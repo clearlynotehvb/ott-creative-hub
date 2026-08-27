@@ -114,6 +114,8 @@ create table if not exists public.creatives (
   title       text not null,
   product_id  uuid references public.products (id) on delete set null,
   notes       text,
+  -- Where the ad sends people; copied into the ad set by the buyer.
+  destination_url text,
   created_by  uuid references public.profiles (id) on delete set null,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
