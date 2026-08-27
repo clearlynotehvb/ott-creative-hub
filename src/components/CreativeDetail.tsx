@@ -6,7 +6,7 @@ import { CopyField } from "@/components/CopyField";
 import { InventoryPanel } from "@/components/InventoryPanel";
 import { DestinationLink } from "@/components/DestinationLink";
 import { deleteCreative } from "@/app/(app)/creatives/actions";
-import { displayPath, formatBytes } from "@/lib/media";
+import { displayPath, formatBytes, formatDateTime, wasEdited } from "@/lib/media";
 import {
   RATIOS,
   RATIO_LABEL,
@@ -37,6 +37,7 @@ export function CreativeDetail({
   const copy = [...(creative.creative_copy ?? [])].sort(
     (a, b) => a.position - b.position
   );
+  const edited = wasEdited(creative.created_at, creative.updated_at);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
@@ -136,6 +137,20 @@ export function CreativeDetail({
               ` · ${creative.profiles.first_name} ${creative.profiles.last_name}`}
           </p>
 
+          {edited && (
+            <p className="mt-1 flex items-center gap-1 text-[11px] text-accent">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden>
+                <path
+                  d="M11.5 2.5 13.5 4.5 5.5 12.5 2.5 13.5 3.5 10.5z"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Last edited {formatDateTime(creative.updated_at)}
+            </p>
+          )}
+
           {creative.notes && (
             <p className="mt-3 whitespace-pre-wrap border-t border-border pt-3 text-[13px] leading-relaxed text-muted">
               {creative.notes}
@@ -223,7 +238,25 @@ export function CreativeDetail({
           )}
         </div>
 
-        {canManage && <DeleteForm id={creative.id} />}
+        {canManage && (
+          <div className="flex gap-2">
+            <Link
+              href={`/creatives/${creative.id}/edit`}
+              className="btn btn-ghost flex-1"
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
+                <path
+                  d="M11.5 2.5 13.5 4.5 5.5 12.5 2.5 13.5 3.5 10.5z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Edit creative
+            </Link>
+            <DeleteForm id={creative.id} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -241,8 +274,8 @@ function DeleteForm({ id }: { id: string }) {
       }}
     >
       <input type="hidden" name="id" value={id} />
-      <button type="submit" className="btn btn-danger w-full">
-        Delete creative
+      <button type="submit" className="btn btn-danger">
+        Delete
       </button>
     </form>
   );

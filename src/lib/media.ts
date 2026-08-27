@@ -79,3 +79,27 @@ export const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
 export function preciseMb(bytes: number): string {
   return (bytes / 1024 / 1024).toFixed(1);
 }
+
+/**
+ * Has this creative been changed since it was first published?
+ *
+ * `updated_at` is set by a trigger on every UPDATE, so on a fresh row it lands
+ * a few milliseconds after `created_at` rather than exactly equal. The tolerance
+ * keeps brand-new creatives from claiming they were edited.
+ */
+export function wasEdited(createdAt: string, updatedAt: string): boolean {
+  return (
+    new Date(updatedAt).getTime() - new Date(createdAt).getTime() > 5_000
+  );
+}
+
+/** "27 Aug 2026 at 14:32" */
+export function formatDateTime(value: string): string {
+  return new Date(value).toLocaleString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

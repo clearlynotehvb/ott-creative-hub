@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { pickThumbnail, displayPath } from "@/lib/media";
+import { pickThumbnail, displayPath, wasEdited } from "@/lib/media";
 import type { CreativeWithRelations } from "@/lib/types";
 
 type SortKey = "newest" | "oldest" | "stock_desc" | "stock_asc";
@@ -273,6 +273,7 @@ function Card({
     creative.title;
 
   const variantCount = copy.length;
+  const edited = wasEdited(creative.created_at, creative.updated_at);
   const hasVideo = assets.some((a) => a.kind === "video");
   const ratios = assets.map((a) => a.ratio);
   const stock = creative.products?.total_inventory ?? null;
@@ -357,6 +358,7 @@ function Card({
 
         <div className="mt-1.5 flex items-center gap-2 text-[11px] text-faint">
           {variantCount > 1 && <span>{variantCount} copy variants</span>}
+          {edited && <span title="Edited since it was published">Edited</span>}
           {creative.destination_url ? (
             <span className="ml-auto flex items-center gap-1" title="Destination link set">
               <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden>
