@@ -7,7 +7,6 @@ import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB, preciseMb } from "@/lib/media";
 import { uploadFile } from "@/lib/upload";
 import { captureVideoPoster, extensionOf } from "@/lib/poster";
 import {
-  ANGLE_SUGGESTIONS,
   RATIOS,
   RATIO_LABEL,
   type AssetRatio,
@@ -263,7 +262,7 @@ export function UploadForm({
               placeholder="Social proof"
             />
             <datalist id="angle-options">
-              {[...new Set([...knownAngles, ...ANGLE_SUGGESTIONS])].map((a) => (
+              {knownAngles.map((a) => (
                 <option key={a} value={a} />
               ))}
             </datalist>
@@ -307,7 +306,7 @@ export function UploadForm({
           </label>
           <input
             id="destination"
-            type="url"
+            type="text"
             inputMode="url"
             value={destination}
             onChange={(e) => setDestination(e.target.value)}

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { signPaths } from "@/lib/media";
 import { EditForm } from "@/components/EditForm";
 import {
+  type AdAngle,
   canManageCreatives,
   type CreativeGroup,
   type CreativeWithRelations,
@@ -61,15 +62,15 @@ export default async function EditCreativePage({
         .order("created_at", { ascending: false })
         .returns<CreativeGroup[]>(),
       supabase
-        .from("creatives")
-        .select("angle")
-        .not("angle", "is", null)
-        .returns<{ angle: string }[]>(),
+        .from("ad_angles")
+        .select("*")
+        .order("position")
+        .order("name")
+        .returns<AdAngle[]>(),
     ]);
 
-  const knownAngles = [
-    ...new Set((angleRows ?? []).map((r) => r.angle.trim()).filter(Boolean)),
-  ].sort((a, b) => a.localeCompare(b));
+  // Managed in Supabase (table: ad_angles), so the list changes without a deploy.
+  const knownAngles = (angleRows ?? []).map((a) => a.name);
 
   // Existing files are shown as previews, so they need signed URLs.
   const assets = creative.creative_assets ?? [];

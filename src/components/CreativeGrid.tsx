@@ -120,6 +120,31 @@ export function CreativeGrid({
     return sorted;
   }, [creatives, query, productId, groupId, angle, uploader, sort]);
 
+  // Sections, newest launch first, with ungrouped work last.
+  const sections = useMemo(() => {
+    const buckets = new Map<
+      string,
+      { id: string; name: string; items: CreativeWithRelations[] }
+    >();
+
+    for (const c of visible) {
+      const id = c.group_id ?? "__none__";
+      const name = c.creative_groups?.name ?? "Ungrouped";
+      const bucket = buckets.get(id) ?? { id, name, items: [] };
+      bucket.items.push(c);
+      buckets.set(id, bucket);
+    }
+
+    return [...buckets.values()].sort((a, b) => {
+      if (a.id === "__none__") return 1;
+      if (b.id === "__none__") return -1;
+      // Whichever group contains the most recent creative floats to the top.
+      const newest = (g: typeof a) =>
+        g.items.reduce((max, i) => (i.created_at > max ? i.created_at : max), "");
+      return newest(b).localeCompare(newest(a));
+    });
+  }, [visible]);
+
   const dirty =
     Boolean(query) ||
     productId !== "all" ||
@@ -232,15 +257,62 @@ export function CreativeGrid({
         <div className="card px-6 py-16 text-center text-sm text-muted">
           No creatives match that filter.
         </div>
-      ) : (
+      ) : hideGroupFilter ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {visible.map((creative) => (
-            <Card
-              key={creative.id}
-              creative={creative}
-              urls={urls}
-              showGroup={!hideGroupFilter}
-            />
+            <Card key={creative.id} creative={creative} urls={urls} showGroup={false} />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {sections.map((section) => (
+            <details key={section.id} open className="group/sec">
+              <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg px-1 py-2 hover:bg-surface-2">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden
+                  className="shrink-0 text-faint transition-transform group-open/sec:rotate-90"
+                >
+                  <path
+                    d="M6 3.5 10.5 8 6 12.5"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+
+                <span
+                  className={
+                    section.id === "__none__"
+                      ? "text-[13px] font-medium text-muted"
+                      : "text-[13px] font-medium"
+                  }
+                >
+                  {section.name}
+                </span>
+
+                <span className="chip">
+                  {section.items.length} ad{section.items.length === 1 ? "" : "s"}
+                </span>
+
+                <span className="ml-2 h-px flex-1 bg-border" />
+              </summary>
+
+              <div className="mt-3 mb-2 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {section.items.map((creative) => (
+                  <Card
+                    key={creative.id}
+                    creative={creative}
+                    urls={urls}
+                    showGroup={false}
+                  />
+                ))}
+              </div>
+            </details>
           ))}
         </div>
       )}

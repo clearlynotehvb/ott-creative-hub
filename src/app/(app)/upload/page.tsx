@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { UploadForm } from "@/components/UploadForm";
 import {
+  type AdAngle,
   canUploadCreatives,
   type CreativeGroup,
   type Product,
@@ -38,15 +39,15 @@ export default async function UploadPage() {
         .order("created_at", { ascending: false })
         .returns<CreativeGroup[]>(),
       supabase
-        .from("creatives")
-        .select("angle")
-        .not("angle", "is", null)
-        .returns<{ angle: string }[]>(),
+        .from("ad_angles")
+        .select("*")
+        .order("position")
+        .order("name")
+        .returns<AdAngle[]>(),
     ]);
 
-  const knownAngles = [
-    ...new Set((angleRows ?? []).map((r) => r.angle.trim()).filter(Boolean)),
-  ].sort((a, b) => a.localeCompare(b));
+  // Managed in Supabase (table: ad_angles), so the list changes without a deploy.
+  const knownAngles = (angleRows ?? []).map((a) => a.name);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">

@@ -12,7 +12,6 @@ import {
 import { uploadFile } from "@/lib/upload";
 import { captureVideoPoster, extensionOf } from "@/lib/poster";
 import {
-  ANGLE_SUGGESTIONS,
   RATIOS,
   RATIO_LABEL,
   type AssetRatio,
@@ -331,7 +330,7 @@ export function EditForm({
               placeholder="Social proof"
             />
             <datalist id="angle-options">
-              {[...new Set([...knownAngles, ...ANGLE_SUGGESTIONS])].map((a) => (
+              {knownAngles.map((a) => (
                 <option key={a} value={a} />
               ))}
             </datalist>
@@ -375,7 +374,7 @@ export function EditForm({
           </label>
           <input
             id="destination"
-            type="url"
+            type="text"
             inputMode="url"
             value={destination}
             onChange={(e) => setDestination(e.target.value)}

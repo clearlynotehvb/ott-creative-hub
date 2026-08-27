@@ -118,16 +118,9 @@ export type CreativeWithRelations = Creative & {
   profiles: Pick<Profile, "first_name" | "last_name"> | null;
 };
 
-/** Angles seen most often in this account, offered as autocomplete on upload. */
-export const ANGLE_SUGGESTIONS = [
-  "Social proof",
-  "Problem / solution",
-  "Offer / discount",
-  "UGC testimonial",
-  "Founder story",
-  "Product demo",
-  "Before / after",
-  "Objection handling",
-  "Scarcity / urgency",
-  "Lifestyle / aspiration",
-];
+export type AdAngle = {
+  id: string;
+  name: string;
+  position: number;
+  created_at: string;
+};
