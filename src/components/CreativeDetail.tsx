@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CopyField } from "@/components/CopyField";
 import { InventoryPanel } from "@/components/InventoryPanel";
 import { DestinationLink } from "@/components/DestinationLink";
+import { LiveToggle } from "@/components/LiveToggle";
 import { deleteCreative } from "@/app/(app)/creatives/actions";
 import { displayPath, formatBytes, formatDateTime, wasEdited } from "@/lib/media";
 import {
@@ -103,6 +104,13 @@ export function CreativeDetail({
       {/* ---------------- Sidebar ---------------- */}
       <div className="space-y-4">
         <div className="card p-4">
+          <div className="mb-3 flex items-center justify-between gap-3 border-b border-border pb-3">
+            <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
+              Status
+            </span>
+            <LiveToggle id={creative.id} live={creative.is_live} compact />
+          </div>
+
           <h1 className="text-base font-semibold leading-snug tracking-tight">
             {copy[0]?.headline?.trim() || creative.title}
           </h1>

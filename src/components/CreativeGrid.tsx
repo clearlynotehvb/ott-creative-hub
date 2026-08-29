@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { pickThumbnail, displayPath, wasEdited } from "@/lib/media";
+import { LiveToggle } from "@/components/LiveToggle";
 import type { CreativeWithRelations } from "@/lib/types";
 
 type SortKey = "newest" | "oldest" | "stock_desc" | "stock_asc";
@@ -33,6 +34,7 @@ export function CreativeGrid({
   const [groupId, setGroupId] = useState("all");
   const [angle, setAngle] = useState("all");
   const [uploader, setUploader] = useState("all");
+  const [liveState, setLiveState] = useState("all");
   const [sort, setSort] = useState<SortKey>("newest");
 
   const products = useMemo(() => {
@@ -77,6 +79,8 @@ export function CreativeGrid({
     const filtered = creatives.filter((c) => {
       if (productId !== "all" && c.product_id !== productId) return false;
       if (uploader !== "all" && c.created_by !== uploader) return false;
+      if (liveState === "live" && !c.is_live) return false;
+      if (liveState === "off" && c.is_live) return false;
       if (groupId !== "all") {
         if (groupId === "none" ? c.group_id : c.group_id !== groupId) return false;
       }
@@ -118,7 +122,7 @@ export function CreativeGrid({
     });
 
     return sorted;
-  }, [creatives, query, productId, groupId, angle, uploader, sort]);
+  }, [creatives, query, productId, groupId, angle, uploader, liveState, sort]);
 
   // Sections, newest launch first, with ungrouped work last.
   const sections = useMemo(() => {
@@ -151,6 +155,7 @@ export function CreativeGrid({
     groupId !== "all" ||
     angle !== "all" ||
     uploader !== "all" ||
+    liveState !== "all" ||
     sort !== "newest";
 
   return (
@@ -162,6 +167,16 @@ export function CreativeGrid({
           placeholder="Search copy, angles, products…"
           className="field max-w-xs"
         />
+
+        <select
+          value={liveState}
+          onChange={(e) => setLiveState(e.target.value)}
+          className="field max-w-[150px]"
+        >
+          <option value="all">Live and off</option>
+          <option value="live">Live only</option>
+          <option value="off">Off only</option>
+        </select>
 
         <select
           value={sort}
@@ -244,6 +259,7 @@ export function CreativeGrid({
               setGroupId("all");
               setAngle("all");
               setUploader("all");
+              setLiveState("all");
               setSort("newest");
             }}
             className="btn btn-ghost"
@@ -353,7 +369,9 @@ function Card({
   return (
     <Link
       href={`/creatives/${creative.id}`}
-      className="group card overflow-hidden transition hover:border-border-strong"
+      className={`group card overflow-hidden transition hover:border-border-strong ${
+        creative.is_live ? "ring-1 ring-good/30" : ""
+      }`}
     >
       <div className="alpha-grid relative aspect-4/5 overflow-hidden">
         {src ? (
@@ -378,6 +396,10 @@ function Card({
             Video
           </span>
         )}
+
+        <span className="absolute left-2 bottom-2">
+          <LiveToggle id={creative.id} live={creative.is_live} compact />
+        </span>
 
         <span className="absolute right-2 top-2 flex gap-1">
           {(["4:5", "1:1", "9:16"] as const)

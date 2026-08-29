@@ -16,7 +16,7 @@ export const metadata = { title: "Edit creative · Own The Trend" };
 export const dynamic = "force-dynamic";
 
 const SELECT = `
-  id, title, angle, product_id, group_id, notes, destination_url, created_by, created_at, updated_at,
+  id, title, angle, product_id, group_id, notes, destination_url, is_live, created_by, created_at, updated_at,
   products ( id, shopify_product_id, title, handle, status, image_url, total_inventory, price, currency, synced_at ),
   creative_assets ( id, creative_id, ratio, storage_path, file_name, mime_type, file_size, kind, poster_path, created_at ),
   creative_copy ( id, creative_id, headline, primary_text, position, created_at ),

@@ -32,3 +32,33 @@ export async function deleteCreative(formData: FormData) {
   revalidatePath("/creatives");
   redirect("/creatives");
 }
+
+export type LiveResult = { error: string | null };
+
+/**
+ * Turn an ad on or off.
+ *
+ * Routed through set_creative_live() rather than a plain update, because any
+ * approved user should be able to flip it — the media buyer running the ad
+ * usually knows first, and they can't edit the creative itself.
+ */
+export async function setCreativeLive(
+  id: string,
+  live: boolean
+): Promise<LiveResult> {
+  if (!id) return { error: "Invalid request." };
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.rpc("set_creative_live", {
+    target_creative: id,
+    live,
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/creatives");
+  revalidatePath(`/creatives/${id}`);
+  revalidatePath("/groups");
+  return { error: null };
+}

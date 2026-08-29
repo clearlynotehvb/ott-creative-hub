@@ -105,6 +105,8 @@ export type Creative = {
   group_id: string | null;
   notes: string | null;
   destination_url: string | null;
+  /** Is this ad running right now? Toggled from the grid or the detail page. */
+  is_live: boolean;
   created_by: string | null;
   created_at: string;
   updated_at: string;
