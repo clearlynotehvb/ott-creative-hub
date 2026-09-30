@@ -7,7 +7,8 @@ import { InventoryPanel } from "@/components/InventoryPanel";
 import { DestinationLink } from "@/components/DestinationLink";
 import { LiveToggle } from "@/components/LiveToggle";
 import { deleteCreative } from "@/app/(app)/creatives/actions";
-import { displayPath, formatBytes, formatDateTime, wasEdited } from "@/lib/media";
+import { displayPath, formatBytes, wasEdited } from "@/lib/media";
+import { LocalTime } from "@/components/LocalTime";
 import {
   RATIOS,
   RATIO_LABEL,
@@ -136,11 +137,7 @@ export function CreativeDetail({
 
           <p className="mt-1.5 text-[11px] text-faint">
             Added{" "}
-            {new Date(creative.created_at).toLocaleDateString(undefined, {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
+            <LocalTime iso={creative.created_at} mode="date" />
             {creative.profiles &&
               ` · ${creative.profiles.first_name} ${creative.profiles.last_name}`}
           </p>
@@ -155,7 +152,7 @@ export function CreativeDetail({
                   strokeLinejoin="round"
                 />
               </svg>
-              Last edited {formatDateTime(creative.updated_at)}
+              Last edited <LocalTime iso={creative.updated_at} />
             </p>
           )}
 

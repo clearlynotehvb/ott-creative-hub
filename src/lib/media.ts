@@ -93,13 +93,3 @@ export function wasEdited(createdAt: string, updatedAt: string): boolean {
   );
 }
 
-/** "27 Aug 2026 at 14:32" */
-export function formatDateTime(value: string): string {
-  return new Date(value).toLocaleString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}

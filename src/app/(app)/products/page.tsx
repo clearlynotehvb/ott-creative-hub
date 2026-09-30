@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SyncButton } from "@/components/SyncButton";
+import { LocalTime } from "@/components/LocalTime";
 import { canManageCreatives, type Product, type Profile } from "@/lib/types";
 
 export const metadata = { title: "Products · Own The Trend" };
@@ -39,13 +40,20 @@ export default async function ProductsPage() {
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Products</h1>
           <p className="mt-1 text-sm text-muted">
-            {rows.length > 0
-              ? `${rows.length} products from Shopify${
-                  lastSync
-                    ? ` · last synced ${new Date(lastSync).toLocaleString()} · updates every 5 minutes`
-                    : ""
-                }`
-              : "Your Shopify catalog loads here automatically within 5 minutes."}
+            {rows.length > 0 ? (
+              <>
+                {rows.length} products from Shopify
+                {lastSync && (
+                  <>
+                    {" · last synced "}
+                    <LocalTime iso={lastSync} />
+                    {" · updates every 5 minutes"}
+                  </>
+                )}
+              </>
+            ) : (
+              "Your Shopify catalog loads here automatically within 5 minutes."
+            )}
           </p>
         </div>
         <SyncButton />
