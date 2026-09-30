@@ -106,17 +106,50 @@ The storage bucket itself already allows 500 MB, so nothing else needs changing.
 
 ---
 
-## Deploying to Vercel
+## Deploying
 
-1. Push this folder to a Git repo.
-2. In Vercel, **Add New → Project** and import it. The defaults are correct —
-   it's a standard Next.js app.
-3. Add all six environment variables from `.env.local` under
-   **Settings → Environment Variables** (Production *and* Preview).
-4. Deploy.
-5. Back in Supabase, open **Authentication → URL Configuration** and set the
-   Site URL to your Vercel domain, adding it to Redirect URLs too. Without this,
-   confirmation emails point at `localhost`.
+The repo lives at **github.com/clearlynotehvb/ott-creative-hub** and is
+connected to the Vercel project `ott-creative-hub`:
+
+- **Push to `main` → production deploys automatically.** No local machine
+  needed; edit on GitHub or push from anywhere.
+- Any other branch or pull request gets its own preview URL.
+- Live at **https://ott-creative-hub.vercel.app**.
+
+Server functions run in **Frankfurt** (`vercel.json` → `fra1`), next to the
+Supabase project in Central EU. Every page makes several database calls in a
+row, so keeping the two in the same region is what keeps pages fast. If the
+database ever moves, move `regions` with it.
+
+### Environment variables
+
+Set in Vercel under **Settings → Environment Variables**, for Production and
+Preview. `.env.local` holds the same values for local development and is never
+committed.
+
+| Variable | Notes |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Public by design |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public by design; RLS does the protecting |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Secret.** Bypasses RLS; server-only |
+| `SHOPIFY_STORE_DOMAIN` | `ownthetrendae.myshopify.com` |
+| `SHOPIFY_ADMIN_ACCESS_TOKEN` | **Secret.** Rotating it in Shopify revokes the old one, so update Vercel at the same time |
+| `SHOPIFY_API_VERSION` | e.g. `2026-07` |
+| `NEXT_PUBLIC_MAX_UPLOAD_MB` | Match Supabase's upload size limit |
+
+Changing a variable only takes effect on the next deploy. Redeploy from the
+Vercel dashboard, or push any commit.
+
+### Moving to a new Supabase project
+
+1. Create the project in **Central EU (Frankfurt)**.
+2. Run `supabase/schema.sql` once in its SQL Editor. It holds every migration,
+   so skip the files in `supabase/migrations/`.
+3. Turn off **Authentication → Email → Confirm email**.
+4. Swap the three `SUPABASE` variables in Vercel and redeploy.
+5. Sign up first and pick Owner. On an empty database the first account is
+   approved automatically, and everyone after that waits in the Team tab.
+6. Open **Products → Sync from Shopify** to reload the catalogue.
 
 ---
 
