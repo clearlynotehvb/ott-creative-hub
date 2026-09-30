@@ -60,7 +60,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Everything except Next internals and static assets.
-    "/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // Everything except Next internals, static assets, and the scheduled
+    // sync (no session there; it authenticates with CRON_SECRET).
+    "/((?!_next/static|_next/image|favicon.ico|api/cron/|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

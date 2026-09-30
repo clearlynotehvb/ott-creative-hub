@@ -42,10 +42,10 @@ export default async function ProductsPage() {
             {rows.length > 0
               ? `${rows.length} products from Shopify${
                   lastSync
-                    ? ` · last synced ${new Date(lastSync).toLocaleString()}`
+                    ? ` · last synced ${new Date(lastSync).toLocaleString()} · updates every 5 minutes`
                     : ""
                 }`
-              : "Sync your Shopify catalog so creatives can be tagged to a product."}
+              : "Your Shopify catalog loads here automatically within 5 minutes."}
           </p>
         </div>
         <SyncButton />
@@ -53,7 +53,7 @@ export default async function ProductsPage() {
 
       {rows.length === 0 ? (
         <div className="card px-6 py-16 text-center text-sm text-muted">
-          Nothing synced yet. Hit “Sync from Shopify” to pull your catalog in.
+          Nothing synced yet. The catalog updates from Shopify every 5 minutes, or hit “Sync from Shopify” to load it now.
         </div>
       ) : (
         <div className="card divide-y divide-border overflow-hidden">

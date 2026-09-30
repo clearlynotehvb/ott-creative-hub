@@ -1,14 +1,86 @@
 /**
  * Thin wrapper over the Shopify Admin GraphQL API.
- * Server-side only — the access token must never reach the browser.
+ * Server-side only — credentials and tokens must never reach the browser.
+ *
+ * Authentication uses the client credentials grant: the app's client ID and
+ * secret are exchanged for an Admin API token that lives about 24 hours.
+ * Legacy custom-app tokens (static shpat_ values from "Develop apps") stopped
+ * working on 1 January 2026, so there is no long-lived token to store.
  */
 
-const API_VERSION = process.env.SHOPIFY_API_VERSION || "2025-07";
+const API_VERSION = process.env.SHOPIFY_API_VERSION || "2026-07";
+
+/** Renew this long before Shopify's stated expiry, so no request races it. */
+const EXPIRY_MARGIN_MS = 5 * 60 * 1000;
 
 export function shopifyConfigured(): boolean {
   return Boolean(
-    process.env.SHOPIFY_STORE_DOMAIN && process.env.SHOPIFY_ADMIN_ACCESS_TOKEN
+    process.env.SHOPIFY_STORE_DOMAIN &&
+      process.env.SHOPIFY_CLIENT_ID &&
+      process.env.SHOPIFY_CLIENT_SECRET
   );
+}
+
+type CachedToken = { value: string; expiresAt: number };
+
+// Per server instance. A cold start just asks for a new token, which costs
+// one extra request, so this never needs to be shared or persisted.
+let cached: CachedToken | null = null;
+let inflight: Promise<string> | null = null;
+
+async function requestToken(): Promise<string> {
+  const domain = process.env.SHOPIFY_STORE_DOMAIN;
+  const clientId = process.env.SHOPIFY_CLIENT_ID;
+  const clientSecret = process.env.SHOPIFY_CLIENT_SECRET;
+
+  if (!domain || !clientId || !clientSecret) {
+    throw new Error(
+      "Shopify is not configured. Set SHOPIFY_STORE_DOMAIN, SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET."
+    );
+  }
+
+  const res = await fetch(`https://${domain}/admin/oauth/access_token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "client_credentials",
+      client_id: clientId,
+      client_secret: clientSecret,
+    }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(
+      `Shopify refused the app credentials (${res.status}). Check the client ID and secret, and that the app is installed on the store. ${body.slice(0, 200)}`
+    );
+  }
+
+  const json = (await res.json()) as {
+    access_token?: string;
+    expires_in?: number;
+  };
+  if (!json.access_token) {
+    throw new Error("Shopify returned no access token");
+  }
+
+  cached = {
+    value: json.access_token,
+    expiresAt: Date.now() + (json.expires_in ?? 3600) * 1000 - EXPIRY_MARGIN_MS,
+  };
+  return cached.value;
+}
+
+/** A valid token, fetching a new one only when the cached one is near expiry. */
+async function getAccessToken(): Promise<string> {
+  if (cached && Date.now() < cached.expiresAt) return cached.value;
+
+  // Several requests arriving together should share one exchange, not race.
+  inflight ??= requestToken().finally(() => {
+    inflight = null;
+  });
+  return inflight;
 }
 
 type GraphQLResponse<T> = {
@@ -18,16 +90,11 @@ type GraphQLResponse<T> = {
 
 async function shopifyGraphQL<T>(
   query: string,
-  variables: Record<string, unknown> = {}
+  variables: Record<string, unknown> = {},
+  retried = false
 ): Promise<T> {
   const domain = process.env.SHOPIFY_STORE_DOMAIN;
-  const token = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
-
-  if (!domain || !token) {
-    throw new Error(
-      "Shopify is not configured. Set SHOPIFY_STORE_DOMAIN and SHOPIFY_ADMIN_ACCESS_TOKEN."
-    );
-  }
+  const token = await getAccessToken();
 
   const res = await fetch(
     `https://${domain}/admin/api/${API_VERSION}/graphql.json`,
@@ -41,6 +108,12 @@ async function shopifyGraphQL<T>(
       cache: "no-store",
     }
   );
+
+  // A token revoked early (app reinstalled, secret rotated) — refresh once.
+  if (res.status === 401 && !retried) {
+    cached = null;
+    return shopifyGraphQL<T>(query, variables, true);
+  }
 
   if (!res.ok) {
     const body = await res.text();

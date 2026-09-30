@@ -66,7 +66,8 @@ cp .env.local.example .env.local
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | same page → anon / public key |
 | `SUPABASE_SERVICE_ROLE_KEY` | same page → service_role key (**server-only, never expose**) |
 | `SHOPIFY_STORE_DOMAIN` | already set to `ownthetrendae.myshopify.com` |
-| `SHOPIFY_ADMIN_ACCESS_TOKEN` | already set |
+| `SHOPIFY_CLIENT_ID` | Shopify Dev Dashboard → your app → Settings |
+| `SHOPIFY_CLIENT_SECRET` | same page (**server-only, never expose**) |
 | `SHOPIFY_API_VERSION` | already set to `2026-07` |
 
 ### 3. Email confirmation
@@ -133,7 +134,8 @@ committed.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public by design; RLS does the protecting |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Secret.** Bypasses RLS; server-only |
 | `SHOPIFY_STORE_DOMAIN` | `ownthetrendae.myshopify.com` |
-| `SHOPIFY_ADMIN_ACCESS_TOKEN` | **Secret.** Rotating it in Shopify revokes the old one, so update Vercel at the same time |
+| `SHOPIFY_CLIENT_ID` | From the Shopify Dev Dashboard app |
+| `SHOPIFY_CLIENT_SECRET` | **Secret.** The server exchanges it for a ~24-hour Admin API token and renews that token itself. Rotating the secret means updating Vercel too |
 | `SHOPIFY_API_VERSION` | e.g. `2026-07` |
 | `NEXT_PUBLIC_MAX_UPLOAD_MB` | Match Supabase's upload size limit |
 
