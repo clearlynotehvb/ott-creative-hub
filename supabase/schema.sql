@@ -837,3 +837,12 @@ select cron.schedule(
     );
   $job$
 );
+
+-- ---------------------------------------------------------------------------
+-- 16. OTT Hub uploader
+-- ---------------------------------------------------------------------------
+alter table public.creatives
+  add column if not exists hub_user_id text,
+  add column if not exists hub_user_name text;
+
+create index if not exists creatives_hub_user_idx on public.creatives (hub_user_id);
